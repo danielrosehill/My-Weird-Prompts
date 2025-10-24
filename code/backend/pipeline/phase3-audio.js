@@ -65,42 +65,86 @@ async function processUserVoice(originalAudioPath) {
 
 /**
  * Generate TTS for AI response
- * Uses OpenAI TTS API
+ * Uses Google Gemini Text-to-Speech with podcast host persona
  */
 async function generateResponseTTS(responseText) {
-  console.log('Generating TTS for AI response...');
+  console.log('Generating TTS for AI response with Gemini...');
 
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    console.warn('OPENAI_API_KEY not set - skipping TTS generation');
+    console.warn('GEMINI_API_KEY not set - skipping TTS generation');
     return null;
   }
 
   try {
-    // Import OpenAI SDK dynamically
-    const { default: OpenAI } = await import('openai');
-    const openai = new OpenAI({ apiKey });
+    // Import Google Generative AI SDK
+    const { GoogleGenerativeAI } = await import('@google/generative-ai');
+    const genAI = new GoogleGenerativeAI(apiKey);
 
-    // Generate speech
-    const mp3 = await openai.audio.speech.create({
-      model: 'tts-1-hd',
-      voice: 'nova', // Female voice with good clarity
-      input: responseText,
-      speed: 1.0,
+    // Use Gemini model with audio generation capabilities
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.0-flash-exp',
     });
 
-    // Save to temporary file
-    const buffer = Buffer.from(await mp3.arrayBuffer());
-    const outputPath = path.join(__dirname, '../temp-uploads', `tts-${Date.now()}.mp3`);
+    // Create prompt with stylistic instructions
+    const ttsPrompt = `You are a knowledgeable, friendly podcast host with a warm, engaging voice. Read the following blog post response in a conversational, professional podcast style. Use natural intonation, slight pauses for emphasis, and maintain an informative yet approachable tone throughout.
+
+Response to read:
+${responseText}`;
+
+    console.log('Sending TTS request to Gemini...');
+    console.log('Response length:', responseText.length, 'characters');
+
+    // Generate audio with Gemini
+    const result = await model.generateContent({
+      contents: [{
+        role: 'user',
+        parts: [{ text: ttsPrompt }]
+      }],
+      generationConfig: {
+        responseModalities: ['AUDIO'],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: {
+              voiceName: 'Aoede' // Professional female voice
+            }
+          }
+        }
+      }
+    });
+
+    const response = await result.response;
+
+    // Extract audio data
+    let audioData = null;
+    for (const candidate of response.candidates || []) {
+      for (const part of candidate.content?.parts || []) {
+        if (part.inlineData?.mimeType?.startsWith('audio/')) {
+          audioData = part.inlineData.data;
+          break;
+        }
+      }
+      if (audioData) break;
+    }
+
+    if (!audioData) {
+      throw new Error('No audio data received from Gemini');
+    }
+
+    // Save audio to file
+    const buffer = Buffer.from(audioData, 'base64');
+    const outputPath = path.join(__dirname, '../temp-uploads', `tts-gemini-${Date.now()}.wav`);
     await fs.writeFile(outputPath, buffer);
 
-    console.log('TTS generated:', outputPath);
+    console.log('Gemini TTS generated:', outputPath);
+    console.log('Audio size:', (buffer.length / 1024 / 1024).toFixed(2), 'MB');
 
     return outputPath;
   } catch (error) {
-    console.error('Error generating TTS:', error);
-    throw new Error(`Failed to generate TTS: ${error.message}`);
+    console.error('Error generating TTS with Gemini:', error);
+    console.warn('Falling back to text-only blog post (no audio)');
+    return null; // Gracefully degrade - blog post will be created without audio
   }
 }
 
