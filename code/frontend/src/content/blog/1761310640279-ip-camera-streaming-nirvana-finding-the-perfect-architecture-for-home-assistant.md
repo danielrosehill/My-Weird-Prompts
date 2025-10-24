@@ -2,7 +2,6 @@
 title: "IP Camera Streaming Nirvana: Finding the Perfect Architecture for Home Assistant"
 description: "I'm on a quest to optimize my home IP camera setup with Home Assistant, but I'm tangled in a web of RTSP, WebRTC, and MSE."
 pubDate: "2025-10-24"
-heroImage: undefined
 tags: ["Home Assistant","IP Cameras","Video Streaming","WebRTC"]
 prompt: "I'm seeking the best architecture for streaming IP camera feeds with Home Assistant, weighing options like RTSP, WebRTC, MSE, and the impact of restreaming for local and remote viewing."
 audioUrl: null

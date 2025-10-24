@@ -2,7 +2,6 @@
 title: "IP Camera Architecture: RTSP, WebRTC, and Home Assistant Harmony"
 description: "Discover the ideal architecture for integrating IP cameras with Home Assistant, balancing performance and reliability through technologies like RTSP and WebRTC."
 pubDate: "2025-10-24"
-heroImage: undefined
 tags: ["Home Automation","IP Cameras","Home Assistant","Video Streaming"]
 prompt: "Seeking guidance on the ideal architecture for IP camera integration with Home Assistant, focusing on performance and reliability using technologies like RTSP, WebRTC, and MSE."
 audioUrl: null

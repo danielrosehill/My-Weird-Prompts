@@ -2,7 +2,6 @@
 title: "Decoding the Ultimate Home IP Camera Streaming Architecture"
 description: "Confused about the best way to stream your home IP camera feeds? I'm breaking down the modern architecture for reliable video streaming, considering everything from local access to remote viewing and Home Assistant integration."
 pubDate: "2025-10-24"
-heroImage: undefined
 tags: ["IP Cameras","Home Assistant","Video Streaming","WebRTC","RTSP","NVR"]
 prompt: "I'm seeking the best architectural approach for streaming video from my home IP cameras, balancing performance, integration, and reliability. What's the modern, professional standard?"
 audioUrl: null
