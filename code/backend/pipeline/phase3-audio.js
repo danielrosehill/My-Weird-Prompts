@@ -82,9 +82,9 @@ async function generateResponseTTS(responseText) {
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // Use Gemini model with audio generation capabilities
+    // Use Gemini Pro 2.5 model with audio generation capabilities
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.5-pro-exp-0121',
     });
 
     // Create prompt with stylistic instructions
