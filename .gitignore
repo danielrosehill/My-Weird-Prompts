@@ -10,3 +10,4 @@
 # (can be overridden on a file-by-file basis with additional ! patterns)
 for-ai/secrets/
 from-ai/secrets/
+.vercel
