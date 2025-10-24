@@ -1,0 +1,203 @@
+---
+interface Props {
+	userAudioUrl: string | null | undefined;
+	userAudioDuration?: number | null;
+	aiAudioUrl: string | null | undefined;
+	aiAudioDuration?: number | null;
+	title: string;
+}
+
+const { userAudioUrl, userAudioDuration, aiAudioUrl, aiAudioDuration, title } = Astro.props;
+
+// Format duration from seconds to MM:SS
+const formatDuration = (duration: string | null | undefined) => {
+	if (!duration) return null;
+	return duration; // Already formatted from backend
+};
+
+const hasAudio = userAudioUrl || aiAudioUrl;
+---
+
+{hasAudio && (
+	<div class="dual-audio-container">
+		<div class="audio-header">
+			<h3>🎙️ Listen to this conversation</h3>
+		</div>
+
+		<div class="audio-players">
+			{userAudioUrl && (
+				<div class="audio-player-card user-audio">
+					<div class="speaker-header">
+						<div class="avatar user-avatar">
+							<span class="avatar-text">👤</span>
+						</div>
+						<div class="speaker-info">
+							<h4>Daniel's Question</h4>
+							{userAudioDuration && <span class="duration">{userAudioDuration}</span>}
+						</div>
+					</div>
+					<audio controls preload="metadata" class="audio-player">
+						<source src={userAudioUrl} type="audio/mpeg" />
+						Your browser does not support the audio element.
+					</audio>
+				</div>
+			)}
+
+			{aiAudioUrl && (
+				<div class="audio-player-card ai-audio">
+					<div class="speaker-header">
+						<div class="avatar ai-avatar">
+							<span class="avatar-text">🤖</span>
+						</div>
+						<div class="speaker-info">
+							<h4>AI Response</h4>
+							{aiAudioDuration && <span class="duration">{aiAudioDuration}</span>}
+						</div>
+					</div>
+					<audio controls preload="metadata" class="audio-player">
+						<source src={aiAudioUrl} type="audio/mpeg" />
+						Your browser does not support the audio element.
+					</audio>
+				</div>
+			)}
+		</div>
+	</div>
+)}
+
+<style>
+	.dual-audio-container {
+		margin: 2rem 0;
+		padding: 2rem;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		border-radius: 16px;
+		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+	}
+
+	.audio-header {
+		text-align: center;
+		margin-bottom: 2rem;
+	}
+
+	.audio-header h3 {
+		margin: 0;
+		color: white;
+		font-size: 1.5rem;
+		font-weight: 600;
+	}
+
+	.audio-players {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.audio-player-card {
+		background: rgba(255, 255, 255, 0.95);
+		border-radius: 12px;
+		padding: 1.5rem;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+		transition: transform 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	.audio-player-card:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+	}
+
+	.speaker-header {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	.avatar {
+		width: 50px;
+		height: 50px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1.5rem;
+		flex-shrink: 0;
+	}
+
+	.user-avatar {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	}
+
+	.ai-avatar {
+		background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+	}
+
+	.avatar-text {
+		filter: brightness(1.2);
+	}
+
+	.speaker-info {
+		flex-grow: 1;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.speaker-info h4 {
+		margin: 0;
+		color: #2d3748;
+		font-size: 1.1rem;
+		font-weight: 600;
+	}
+
+	.duration {
+		color: #718096;
+		font-size: 0.9rem;
+		background: #edf2f7;
+		padding: 0.25rem 0.75rem;
+		border-radius: 12px;
+		font-weight: 500;
+	}
+
+	.audio-player {
+		width: 100%;
+		border-radius: 8px;
+		background: #f7fafc;
+	}
+
+	/* Custom audio player colors */
+	.user-audio .audio-player::-webkit-media-controls-panel {
+		background: linear-gradient(to right, #667eea10, #764ba210);
+	}
+
+	.ai-audio .audio-player::-webkit-media-controls-panel {
+		background: linear-gradient(to right, #f093fb10, #f5576c10);
+	}
+
+	@media (max-width: 720px) {
+		.dual-audio-container {
+			padding: 1rem;
+		}
+
+		.audio-header h3 {
+			font-size: 1.2rem;
+		}
+
+		.audio-player-card {
+			padding: 1rem;
+		}
+
+		.avatar {
+			width: 40px;
+			height: 40px;
+			font-size: 1.2rem;
+		}
+
+		.speaker-info h4 {
+			font-size: 1rem;
+		}
+
+		.duration {
+			font-size: 0.8rem;
+			padding: 0.2rem 0.6rem;
+		}
+	}
+</style>

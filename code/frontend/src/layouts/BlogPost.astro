@@ -5,11 +5,11 @@ import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
-import AudioPlayer from '../components/AudioPlayer.astro';
+import DualAudioPlayer from '../components/DualAudioPlayer.astro';
 
 type Props = CollectionEntry<'blog'>['data'];
 
-const { title, description, pubDate, updatedDate, heroImage, audioUrl, audioDuration } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, userAudioUrl, userAudioDuration, aiAudioUrl, aiAudioDuration } = Astro.props;
 ---
 
 <html lang="en">
@@ -78,7 +78,13 @@ const { title, description, pubDate, updatedDate, heroImage, audioUrl, audioDura
 						<h1>{title}</h1>
 						<hr />
 					</div>
-					<AudioPlayer audioUrl={audioUrl} audioDuration={audioDuration} title={title} />
+					<DualAudioPlayer
+						userAudioUrl={userAudioUrl}
+						userAudioDuration={userAudioDuration}
+						aiAudioUrl={aiAudioUrl}
+						aiAudioDuration={aiAudioDuration}
+						title={title}
+					/>
 					<slot />
 				</div>
 			</article>

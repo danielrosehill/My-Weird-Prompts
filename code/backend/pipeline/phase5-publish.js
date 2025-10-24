@@ -46,8 +46,11 @@ function generateFrontmatter(allPhases) {
     tags: phase1.tags,
     // Custom fields for My Weird Prompts
     prompt: phase1.prompt_summary,
-    audioUrl: phase3.audioUrl || null,
-    audioDuration: phase3.durationFormatted || null,
+    // Dual audio mode: separate files for user prompt and AI response
+    userAudioUrl: phase3.userAudioUrl || null,
+    userAudioDuration: phase3.userDurationFormatted || null,
+    aiAudioUrl: phase3.aiAudioUrl || null,
+    aiAudioDuration: phase3.aiDurationFormatted || null,
     aiGenerated: true,
     transcript: phase1.transcript,
   };

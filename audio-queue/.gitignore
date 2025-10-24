@@ -1,0 +1,14 @@
+# Ignore all audio files in queue directories
+incoming/*
+processing/*
+processed/*
+failed/*
+
+# But keep the directories themselves
+!incoming/.gitkeep
+!processing/.gitkeep
+!processed/.gitkeep
+!failed/.gitkeep
+
+# Keep this README
+!README.md
