@@ -1,0 +1,1 @@
+Vercel has a ton of AI integrations and I think a lot of the backend could be handled there. Check what they have thoroughly before implementing anything unnecessary. If this repo only versioned the acstual site design and all the backend ran through actions and webhooks that would be ideal.

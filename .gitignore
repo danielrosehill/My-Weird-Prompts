@@ -1,0 +1,12 @@
+# Project-specific gitignore for My-Weird-Prompts
+# This overrides global gitignore patterns where needed
+
+# Exempt AI workspace directories from global gitignore
+# These directories are part of the project and should be version controlled
+!for-ai/
+!from-ai/
+
+# However, still ignore these if they contain sensitive content
+# (can be overridden on a file-by-file basis with additional ! patterns)
+for-ai/secrets/
+from-ai/secrets/

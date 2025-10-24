@@ -1,0 +1,1 @@
+Nano Banana - graphics and cover art for show manually added
