@@ -24,10 +24,10 @@ const __dirname = path.dirname(__filename);
  * Initialize Gemini client
  */
 function getGeminiClient() {
-  const apiKey = process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_SANDBOX;
+  const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    throw new Error('GOOGLE_AI_API_KEY or GEMINI_SANDBOX environment variable not set');
+    throw new Error('GEMINI_API_KEY environment variable not set');
   }
 
   return new GoogleGenerativeAI(apiKey);
