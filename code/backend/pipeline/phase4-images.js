@@ -58,7 +58,16 @@ async function generateWithReplicate(prompt) {
       }
     );
 
-    return output[0]; // URL to generated image
+    // Handle FileOutput object from Replicate SDK
+    const firstOutput = Array.isArray(output) ? output[0] : output;
+    if (firstOutput && typeof firstOutput.url === 'function') {
+      // Extract URL from FileOutput object
+      const urlObj = firstOutput.url();
+      return urlObj.href || urlObj.toString();
+    }
+
+    // Fallback for older SDK versions or direct URL strings
+    return firstOutput;
 
   } catch (error) {
     console.error('Replicate error:', error);
@@ -184,47 +193,18 @@ async function uploadImageToCloudinary(imagePath, publicId) {
  * Generate placeholder image (fallback when no image gen available)
  */
 async function generatePlaceholder(title, tags) {
-  console.log('Generating placeholder image...');
+  console.log('Using external placeholder service...');
 
-  // Use Cloudinary's text overlay feature to create a simple banner
-  configureCloudinary();
+  // Use placehold.co as a simple fallback
+  const encodedTitle = encodeURIComponent(title.substring(0, 50));
+  const placeholderUrl = `https://placehold.co/1216x832/6366f1/white?text=${encodedTitle}`;
 
-  try {
-    const result = cloudinary.url('placeholder-base.png', {
-      sign_url: false,
-      transformation: [
-        { width: 1200, height: 630, crop: 'fill', background: 'auto:predominant' },
-        {
-          overlay: {
-            font_family: 'Arial',
-            font_size: 60,
-            font_weight: 'bold',
-            text: title.substring(0, 50), // Truncate if too long
-          },
-          color: 'white',
-          gravity: 'center',
-        },
-      ],
-    });
-
-    return {
-      url: result,
-      publicId: 'placeholder',
-      width: 1200,
-      height: 630,
-      isPlaceholder: true,
-    };
-  } catch (error) {
-    console.error('Error generating placeholder:', error);
-    // Return absolute fallback
-    return {
-      url: 'https://placehold.co/1200x630/6366f1/white?text=My+Weird+Prompts',
-      publicId: 'fallback',
-      width: 1200,
-      height: 630,
-      isPlaceholder: true,
-    };
-  }
+  return {
+    imageUrl: placeholderUrl,
+    isPlaceholder: true,
+    width: 1216,
+    height: 832,
+  };
 }
 
 /**
@@ -274,40 +254,55 @@ export async function processPhase4(phase1Result, phase2Result) {
       };
     }
 
-    // Upload to Cloudinary
+    // Save image locally to frontend public directory
     const timestamp = Date.now();
     const slug = phase1Result.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
-    const publicId = `banner-${timestamp}-${slug}`;
+    const filename = `banner-${timestamp}-${slug}.png`;
 
-    let uploadResult;
+    // Path to frontend public/images directory
+    const publicImagesDir = path.join(__dirname, '../../frontend/public/images/banners');
+    await fs.mkdir(publicImagesDir, { recursive: true });
+    const localImagePath = path.join(publicImagesDir, filename);
 
-    // If imagePath is a URL (from Replicate), download it first
+    let savedImagePath;
+    let fileSize;
+
+    // If imagePath is a URL (from Replicate), download it
     if (imagePath.startsWith('http')) {
+      console.log('Downloading image from Replicate...');
       const response = await fetch(imagePath);
       const buffer = await response.arrayBuffer();
-      const tempPath = path.join(__dirname, '../temp-uploads', `banner-${Date.now()}.png`);
-      await fs.writeFile(tempPath, Buffer.from(buffer));
-      uploadResult = await uploadImageToCloudinary(tempPath, publicId);
-      await fs.unlink(tempPath).catch(() => {});
+      await fs.writeFile(localImagePath, Buffer.from(buffer));
+      savedImagePath = localImagePath;
+      fileSize = buffer.byteLength;
+      console.log(`Image saved locally: ${filename} (${(fileSize / 1024 / 1024).toFixed(2)} MB)`);
     } else {
-      // Local file path
-      uploadResult = await uploadImageToCloudinary(imagePath, publicId);
+      // Local file path - copy to public directory
+      console.log('Copying local image to public directory...');
+      await fs.copyFile(imagePath, localImagePath);
+      const stats = await fs.stat(localImagePath);
+      fileSize = stats.size;
+      savedImagePath = localImagePath;
+      // Clean up temp file
       await fs.unlink(imagePath).catch(() => {});
+      console.log(`Image saved locally: ${filename} (${(fileSize / 1024 / 1024).toFixed(2)} MB)`);
     }
 
+    // Return web-accessible path (relative to frontend public directory)
+    const webPath = `/images/banners/${filename}`;
+
     console.log('Phase 4 complete:', {
-      imageUrl: uploadResult.url,
+      imageUrl: webPath,
     });
 
     return {
-      imageUrl: uploadResult.url,
-      cloudinaryPublicId: uploadResult.publicId,
-      width: uploadResult.width,
-      height: uploadResult.height,
-      fileSize: uploadResult.size,
+      imageUrl: webPath,
+      localPath: savedImagePath,
+      filename: filename,
+      fileSize: fileSize,
       generatedAt: new Date().toISOString(),
       prompt: imagePrompt,
     };

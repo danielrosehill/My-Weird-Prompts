@@ -59,12 +59,17 @@ const upload = multer({
       'audio/x-m4a',
       'audio/ogg',
       'audio/webm',
+      'application/octet-stream', // Sometimes MIME type isn't detected properly
     ];
 
-    if (allowedMimeTypes.includes(file.mimetype)) {
+    // Also check file extension as fallback
+    const allowedExtensions = ['.mp3', '.wav', '.m4a', '.ogg', '.webm', '.flac'];
+    const fileExt = path.extname(file.originalname).toLowerCase();
+
+    if (allowedMimeTypes.includes(file.mimetype) || allowedExtensions.includes(fileExt)) {
       cb(null, true);
     } else {
-      cb(new Error(`Invalid file type: ${file.mimetype}. Only audio files are allowed.`));
+      cb(new Error(`Invalid file type: ${file.mimetype} (${file.originalname}). Only audio files are allowed.`));
     }
   }
 });
@@ -79,6 +84,13 @@ app.use(express.urlencoded({ extended: true }));
  */
 function validateWebhookSignature(req, signature) {
   const webhookSecret = process.env.VOICENOTES_WEBHOOK_SECRET;
+  const isDevelopment = process.env.NODE_ENV === 'development';
+
+  // Skip validation in development mode
+  if (isDevelopment) {
+    console.log('Development mode - skipping webhook signature validation');
+    return true;
+  }
 
   if (!webhookSecret) {
     console.warn('VOICENOTES_WEBHOOK_SECRET not configured - skipping signature validation');
@@ -123,7 +135,9 @@ app.post('/webhook/voicenotes', upload.single('audio'), async (req, res) => {
 
     // Validate webhook signature
     const signature = req.headers['x-webhook-signature'];
-    if (!validateWebhookSignature(req, signature)) {
+    const isValid = validateWebhookSignature(req, signature);
+    console.log('Signature validation result:', isValid, '(NODE_ENV:', process.env.NODE_ENV, ')');
+    if (!isValid) {
       console.error('Invalid webhook signature');
       return res.status(401).json({ error: 'Invalid signature' });
     }
